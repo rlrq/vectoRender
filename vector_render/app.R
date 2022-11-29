@@ -3,6 +3,9 @@
 ## removing stuff, maybe? https://stackoverflow.com/questions/31454185/how-to-add-remove-input-fields-dynamically-by-a-button-in-shiny
 ## removing stuff again, maybe? https://stackoverflow.com/questions/62722354/dynamically-changing-the-widgets-page-based-on-function-parameters-in-shiny
 
+if(!require("utils")){
+    install.packages("utils")
+}
 if(!require("shiny")){
     install.packages("shiny")
 }
@@ -22,6 +25,7 @@ if(!require("shinyDirectoryInput")){
     remotes::install_github("wleepang/shiny-directory-input")
 }
 
+library(utils)
 library(shiny)
 library(tidyverse)
 library(geomtextpath)
@@ -412,7 +416,8 @@ ui <- fluidPage(
               ),
               column(
                 width = 4,
-                actionButton("download", "Download"),
+                downloadButton("downloadPlots", "Download")
+                ## actionButton("download", "Download"),
               )
             )
           )
@@ -694,9 +699,28 @@ server <- function(input, output) {
         ggsave(fout, plotInput(),
                h = input$save.res*PLOT_HEIGHT/PREVIEW_RES,
                w = input$save.res*PLOT_HEIGHT/PREVIEW_RES,
-               units = "px")
-    }
-  })
+               units = "px")}
+    })
+  
+  output$downloadPlots <- downloadHandler(
+    filename = function(){paste0(input$fname, ".zip")},
+    content = function(file){
+      curr_dir <- getwd()
+      new_dir <- file.path(getwd(), "plots")
+      dir.create(new_dir)
+      setwd(new_dir)
+      fouts <- outputFbase()
+      for (fout in fouts){
+          ggsave(fout, plotInput(),
+                 h = input$save.res*PLOT_HEIGHT/PREVIEW_RES,
+                 w = input$save.res*PLOT_HEIGHT/PREVIEW_RES,
+                 units = "px")
+      }
+      fout <- file.path(getwd(), paste0(input$fname, ".zip"))
+          zip(zipfile = file,
+              files = sapply(fouts, basename))
+      setwd(curr_dir)}
+  )
 }
 
 ## server <- server.2
