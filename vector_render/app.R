@@ -35,7 +35,7 @@ ARROW_LEN <- 10
 FONT_SIZE <- 5
 PLOT_HEIGHT <- 400 ## in px
 PREVIEW_RES <- 72 ## dpi
-SAVE_RES <- 300
+SAVE_RES <- 300 ## dpi
 
 
 # > HELPER FUNCTIONS ###########################################################
