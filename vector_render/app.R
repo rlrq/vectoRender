@@ -3,16 +3,39 @@
 ## removing stuff, maybe? https://stackoverflow.com/questions/31454185/how-to-add-remove-input-fields-dynamically-by-a-button-in-shiny
 ## removing stuff again, maybe? https://stackoverflow.com/questions/62722354/dynamically-changing-the-widgets-page-based-on-function-parameters-in-shiny
 
+if(!require("shiny")){
+    install.packages("shiny")
+}
+if(!require("tidyverse")){
+    install.packages("tidyverse")
+}
+if(!require("geomtextpath")){
+    install.packages("geomtextpath")
+}
+if(!require("intervals")){
+    install.packages("intervals")
+}
+if(!require("shinyDirectoryInput")){
+    if(!require("remotes")){
+        install.packages("remotes")
+    }
+    remotes::install_github("wleepang/shiny-directory-input")
+}
+
 library(shiny)
 library(tidyverse)
 library(geomtextpath)
 library(intervals)
+library(shinyDirectoryInput)
 
 MIDDLE <- 2
 WIDTH <- 0.2
 ARROW_WIDTH <- 0.1
 ARROW_LEN <- 10
 FONT_SIZE <- 5
+PLOT_HEIGHT <- 400 ## in px
+PREVIEW_RES <- 72 ## dpi
+SAVE_RES <- 300
 
 
 # > HELPER FUNCTIONS ###########################################################
@@ -252,7 +275,7 @@ feature <- function(input, output, session){
 
 ## |__ UI ======================================================================
 
-ui.2 <- fluidPage(
+ui <- fluidPage(
   fluidRow(
     column(
       width = 7,
@@ -300,7 +323,7 @@ ui.2 <- fluidPage(
     column(
       width = 5,
       fluidRow(
-        plotOutput("plotPlasmid"),
+        plotOutput("plotPlasmid", width = "100%", height = paste0(PLOT_HEIGHT, "px")),
         h3("Plot aesthetics"),
         fluidRow(
           column(
@@ -370,14 +393,28 @@ ui.2 <- fluidPage(
             checkboxGroupInput(
               inputId  = "fmt",
               label    = "Export format(s)",
-              choices  = list("pdf" = "pdf",
-                             "png" = "png"),
+              choices  = list("eps" = "eps",
+                              "jpeg" = "jpeg",
+                              "pdf" = "pdf",
+                              "png" = "png",
+                              "svg" = "svg"),
               selected = "pdf"
             )
           ),
           column(
             width = 6,
-            actionButton("download", "Download"),
+            fluidRow(
+              numericInput(
+                inputId = "save.res",
+                label   = "Resolution (dpi)",
+                value   = SAVE_RES,
+                min     = 1
+              ),
+              column(
+                width = 4,
+                actionButton("download", "Download"),
+              )
+            )
           )
         )
       )
@@ -385,11 +422,11 @@ ui.2 <- fluidPage(
   )
 )
 
-ui <- ui.2
+## ui <- ui.2
 
 ## |__ Server ==================================================================
 
-server.2 <- function(input, output) {
+server <- function(input, output) {
   
   output$wd <- renderText({getwd()})
   
@@ -625,8 +662,8 @@ server.2 <- function(input, output) {
   })
   
   output$plotPlasmid <- renderPlot({
-    plotInput()
-  })
+      plotInput()
+  }, res = PREVIEW_RES)
   
   ## \__ Export Image----------------------------------------------------------
   
@@ -654,12 +691,15 @@ server.2 <- function(input, output) {
   observeEvent(input$download, {
     fouts <- outputFbase()
     for (fout in fouts){
-      ggsave(fout, plotInput(), h = 5, w = 5)
+        ggsave(fout, plotInput(),
+               h = input$save.res*PLOT_HEIGHT/PREVIEW_RES,
+               w = input$save.res*PLOT_HEIGHT/PREVIEW_RES,
+               units = "px")
     }
   })
 }
 
-server <- server.2
+## server <- server.2
 
 #------------------------------------------------------------------------------#
 shinyApp(ui, server)
