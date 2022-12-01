@@ -591,6 +591,8 @@ server <- function(input, output) {
     df <- dfReactive()
     if (nrow(df) == 0){return(df)}
     
+    mid <- MIDDLE*input$scale
+    
     ## coord_offset offsets all features so that none
     ## of them intersect with the space between
     ## <vector len> and 0
@@ -609,7 +611,8 @@ server <- function(input, output) {
                     offset = effective_offset,
                     labpos = (xmax + xmin)/2) %>%
       reactive_df_polygon(arrow_len = arrowLen(),
-                          arrow_width = arrowWidth())
+                          arrow_width = arrowWidth(),
+                          mid = mid)
     df
   })
   
