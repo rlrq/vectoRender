@@ -371,20 +371,20 @@ ui <- fluidPage(
           )
         ),
         h3("Download map"),
-        h5(strong("Output directory")),
-        fluidRow(
-          column(
-            width = 4,
-            actionButton(
-              inputId = "directory",
-              label   = "Select directory"
-            )
-          ),
-          column(
-            width = 8,
-            textOutput("wd")
-          )
-        ),
+        ## h5(strong("Output directory")),
+        ## fluidRow(
+        ##   column(
+        ##     width = 4,
+        ##     actionButton(
+        ##       inputId = "directory",
+        ##       label   = "Select directory"
+        ##     )
+        ##   ),
+        ##   column(
+        ##     width = 8,
+        ##     textOutput("wd")
+        ##   )
+        ## ),
         h5(""),
         textInput(
           inputId = "fname",
@@ -675,13 +675,13 @@ server <- function(input, output) {
   
   ## \__ Export Image----------------------------------------------------------
   
-  observeEvent(input$directory, {
-    new_dir <- choose.dir(getwd())
-    if (!(is.na(new_dir) || is.null(new_dir))){
-      setwd(new_dir)
-    }
-    output$wd <- renderText(getwd())
-  })
+  ## observeEvent(input$directory, {
+  ##   new_dir <- choose.dir(getwd())
+  ##   if (!(is.na(new_dir) || is.null(new_dir))){
+  ##     setwd(new_dir)
+  ##   }
+  ##   output$wd <- renderText(getwd())
+  ## })
   
   outputFbase <- reactive({
     req(input$fmt, input$fname)
@@ -709,7 +709,7 @@ server <- function(input, output) {
     filename = function(){paste0(input$fname, ".zip")},
     content = function(file){
       curr_dir <- getwd()
-      new_dir <- file.path(getwd(), "plots")
+      new_dir <- tempdir()
       dir.create(new_dir)
       setwd(new_dir)
       fouts <- outputFbase()
