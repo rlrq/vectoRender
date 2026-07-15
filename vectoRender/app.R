@@ -722,7 +722,12 @@ server <- function(input, output) {
       fout <- file.path(getwd(), paste0(input$fname, ".zip"))
           zip(zipfile = file,
               files = sapply(fouts, basename))
-      setwd(curr_dir)}
+      for (fout in fouts){
+          file.remove(fout)
+      }
+      setwd(curr_dir)
+      ## unlink(new_dir, recursive=TRUE)
+    }
   )
 }
 
